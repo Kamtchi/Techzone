@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechZone — Boutique Tech en ligne</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+  <header class="header">
+    <div class="header-inner">
+
+      <!-- Logo -->
+      <a href="#" class="logo">Tech<span>Zone</span></a>
+
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="search" id="search" placeholder="Rechercher un produit ou une marque…" autocomplete="off">
+      </div>
+
+      <!-- Actions header -->
+      <div class="header-actions">
+        <!-- Statut API -->
+        <div class="api-status">
+          <span id="api-status" class="api-dot loading" title="Connexion…"></span>
+          <span class="api-label">API</span>
+        </div>
+
+        <!-- Panier -->
+        <button class="cart-btn" title="Panier">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span id="cart-count"></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =====================================================
+       CONTENU PRINCIPAL
+  ====================================================== -->
+  <div class="page-layout">
+
+    <!-- === SIDEBAR CATÉGORIES === -->
+    <aside class="sidebar">
+      <p class="sidebar-title">Catégories</p>
+      <ul id="sidebar-categories">
+        <!-- Rempli dynamiquement par ui.js via app.js -->
+        <li><button class="cat-btn active" data-cat="all" onclick="filtrerParCategorie('all', this)">
+            <span class="cat-icon">🏪</span> Tous les produits
+          </button></li>
+      </ul>
+    </aside>
+
+    <!-- === ZONE PRINCIPALE === -->
+    <main class="main-content">
+
+      <!-- Promotions -->
+      <section id="promotions-section">
+        <!-- Rempli dynamiquement par ui.js -->
+      </section>
+
+      <!-- Barre de filtre rapide + tri -->
+      <div class="filter-bar">
+        <div class="filter-bar-left" id="filter-categories">
+          <!-- Chips de catégories — remplies par ui.js -->
+        </div>
+        <div class="filter-bar-right">
+          <span id="products-count"></span>
+          <select id="tri" class="select-tri">
+            <option value="default">Trier par…</option>
+            <option value="prix-asc">Prix croissant</option>
+            <option value="prix-desc">Prix décroissant</option>
+            <option value="note">Meilleures notes</option>
+            <option value="nom">Nom A→Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grille produits -->
+      <section id="products-grid">
+        <!-- Rempli dynamiquement par products.js via app.js -->
+        <!-- Les skeletons s'affichent d'abord pendant le chargement -->
+      </section>
+
+      <!-- Témoignages -->
+      <section id="testimonials-section">
+        <!-- Rempli dynamiquement par ui.js -->
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =====================================================
+       MODAL APERÇU PRODUIT
+  ====================================================== -->
+  <div id="modal" role="dialog" aria-modal="true">
+    <div id="modal-content">
+      <!-- Rempli dynamiquement par products.js (ouvrirModal) -->
+    </div>
+  </div>
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+  <footer>
+    <p>© 2025 <strong>TechZone</strong> — Formation JS Multi-fichiers &amp; API REST par <strong>ROSNI</strong></p>
+    <p style="margin-top:6px; font-size:12px;">
+      API : <a href="https://my-json-server.typicode.com/visiontechft/techzone-api" target="_blank"
+        style="color:var(--accent)">my-json-server.typicode.com/visiontechft/techzone-api</a>
+    </p>
+  </footer>
+
+  <!-- =====================================================
+       SCRIPTS — ordre crucial ! api.js en premier
+  ====================================================== -->
+  <script src="js/api.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>
