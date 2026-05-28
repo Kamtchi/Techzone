@@ -101,5 +101,8 @@ function setupTagFilters() {
     });
 }
 
-// DOMContentLoaded garantit que le HTML est prêt avant d'essayer de remplir les éléments
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    setupThemeToggle();
+    init();
+});
