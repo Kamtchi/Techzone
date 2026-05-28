@@ -1,108 +1,132 @@
-// Point d'entrée de l'application.
-// Coordonne les appels API, la fusion des données, et l'affichage.
-
-// On garde les données brutes en mémoire pour éviter de rappeler l'API à chaque filtre
-let allProducts = [];
-let allDetails = [];
+let tousLesProduits = [];
 
 async function init() {
-    renderLoading();
+  setApiStatus('loading');
+  afficherSkeleton(8);
 
-    try {
-        // Promise.all lance les 5 appels EN PARALLÈLE — bien plus rapide qu'un par un.
-        // Sans Promise.all, on attendrait chaque réponse avant de lancer la suivante.
-        const [products, details, categories, promotions, testimonials] = await Promise.all([
-            fetchProducts(),
-            fetchDetails(),
-            fetchCategories(),
-            fetchPromotions(),
-            fetchTestimonials()
-        ]);
+  try {
+    const [produits, categories, promotions, temoignages] = await Promise.all([
+      getProduits(),
+      getCategories(),
+      getPromotions(),
+      getTestimonials()
+    ]);
 
-        // On sauvegarde pour pouvoir filtrer sans rappeler l'API
-        allProducts = products;
-        allDetails = details;
+    tousLesProduits = produits;
+    window._tousLesProduits = produits;
 
-        // Affichage initial : tous les produits fusionnés
-        renderCategories(categories);
-        renderProducts(mergeProductData(products, details));
-        renderPromotions(promotions);
-        renderTestimonials(testimonials);
+    setApiStatus('ok');
 
-        // Mise en place des boutons de filtrage
-        setupCategoryFilters();
-        setupTagFilters();
+    afficherCategories(categories);
+    afficherPromotions(promotions);
+    afficherProduits(tousLesProduits);
+    afficherTemoignages(temoignages);
 
-    } catch (error) {
-        renderError('Impossible de charger les produits. Vérifiez votre connexion.');
-        console.error(error);
-    }
+    initControles();
+
+    console.log(`✅ TechZone chargé : ${produits.length} produits, ${categories.length} catégories`);
+
+  } catch (erreur) {
+    setApiStatus('error');
+    afficherErreur('Impossible de joindre l\'API TechZone. Vérifiez votre connexion et réessayez.');
+    console.error('Erreur init() :', erreur);
+  }
 }
 
-// Filtre par catégorie — utilise l'endpoint /products?category_id=xxx
-function setupCategoryFilters() {
-    document.getElementById('categories-list').addEventListener('click', async (e) => {
-        if (!e.target.matches('.category-btn')) return;
+let categorieActive = 'all';
 
-        // On met à jour le bouton actif visuellement
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
+function filtrerParCategorie(categoryId, btnClique) {
+  categorieActive = categoryId;
 
-        // Aussi réinitialiser les filtres par tag
-        document.querySelectorAll('#tag-filters button').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('#tag-filters button[data-tag=""]').classList.add('active');
+  document.querySelectorAll('.cat-btn, .chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === categoryId);
+  });
 
-        const categoryId = e.target.dataset.category;
-        renderLoading();
+  let filtres = categoryId === 'all'
+    ? tousLesProduits
+    : tousLesProduits.filter(p => p.category_id === categoryId);
 
-        try {
-            if (categoryId === '') {
-                // Bouton "Tous" : on utilise les données déjà en mémoire, sans rappel API
-                renderProducts(mergeProductData(allProducts, allDetails));
-            } else {
-                // On demande à l'API seulement les produits de cette catégorie
-                const filtered = await fetchProductsByCategory(categoryId);
-                renderProducts(mergeProductData(filtered, allDetails));
-            }
-        } catch {
-            renderError('Erreur lors du filtrage par catégorie.');
-        }
-    });
+  const query = document.querySelector('#search')?.value.toLowerCase().trim();
+  if (query) {
+    filtres = filtres.filter(p =>
+      p.name.toLowerCase().includes(query) ||
+      (p.brand || '').toLowerCase().includes(query)
+    );
+  }
+
+  afficherProduits(filtres);
+  document.querySelector('#products-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Filtre par tag — utilise l'endpoint /details?tag=sale ou /details?tag=new
-function setupTagFilters() {
-    document.getElementById('tag-filters').addEventListener('click', async (e) => {
-        if (!e.target.matches('[data-tag]')) return;
+function reinitialiserFiltres() {
+  categorieActive = 'all';
+  const search = document.querySelector('#search');
+  if (search) search.value = '';
+  const tri = document.querySelector('#tri');
+  if (tri) tri.value = 'default';
 
-        document.querySelectorAll('#tag-filters button').forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
+  document.querySelectorAll('.cat-btn, .chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === 'all');
+  });
 
-        // Réinitialiser le filtre catégorie
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('.category-btn[data-category=""]').classList.add('active');
+  afficherProduits(tousLesProduits);
+}
 
-        const tag = e.target.dataset.tag;
-        renderLoading();
+function initControles() {
+  const champRecherche = document.querySelector('#search');
+  if (champRecherche) {
+    champRecherche.addEventListener('input', () => {
+      const query = champRecherche.value.toLowerCase().trim();
 
-        try {
-            if (tag === '') {
-                renderProducts(mergeProductData(allProducts, allDetails));
-            } else {
-                // On récupère les détails filtrés par tag, puis on retrouve les produits correspondants
-                const taggedDetails = await fetchDetailsByTag(tag);
-                const taggedIds = taggedDetails.map(d => d.id);
-                const taggedProducts = allProducts.filter(p => taggedIds.includes(p.id));
-                renderProducts(mergeProductData(taggedProducts, taggedDetails));
-            }
-        } catch {
-            renderError('Erreur lors du filtrage par tag.');
-        }
+      let base = categorieActive === 'all'
+        ? tousLesProduits
+        : tousLesProduits.filter(p => p.category_id === categorieActive);
+
+      const resultats = query
+        ? base.filter(p =>
+            p.name.toLowerCase().includes(query) ||
+            (p.brand || '').toLowerCase().includes(query)
+          )
+        : base;
+
+      afficherProduits(resultats);
     });
+  }
+
+  const selectTri = document.querySelector('#tri');
+  if (selectTri) {
+    selectTri.addEventListener('change', () => {
+      let base = categorieActive === 'all'
+        ? [...tousLesProduits]
+        : tousLesProduits.filter(p => p.category_id === categorieActive);
+
+      let tries = [...base];
+
+      switch (selectTri.value) {
+        case 'prix-asc':  tries.sort((a, b) => a.price - b.price); break;
+        case 'prix-desc': tries.sort((a, b) => b.price - a.price); break;
+        case 'note':      tries.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+        case 'nom':       tries.sort((a, b) => a.name.localeCompare(b.name)); break;
+      }
+
+      afficherProduits(tries);
+    });
+  }
+
+  const modal = document.querySelector('#modal');
+  if (modal) {
+    modal.addEventListener('click', e => { if (e.target === modal) fermerModal(); });
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerModal(); });
+
+  const panier = JSON.parse(localStorage.getItem('panier') || '[]');
+  const count = document.querySelector('#cart-count');
+  if (count && panier.length) count.textContent = panier.length;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    setupThemeToggle();
-    init();
+  initTheme();
+  setupThemeToggle();
+  init();
 });

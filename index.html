@@ -1,68 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechZone</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechZone — Boutique Tech en ligne</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <header>
-        <div class="header-text">
-            <h1>TechZone</h1>
-            <p>La tech à portée de main</p>
+  <header class="header">
+    <div class="header-inner">
+
+      <a href="#" class="logo">Tech<span>Zone</span></a>
+
+      <div class="search-bar">
+        <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="search" id="search" placeholder="Rechercher un produit ou une marque…" autocomplete="off">
+      </div>
+
+      <div class="header-actions">
+        <div class="api-status">
+          <span id="api-status" class="api-dot loading" title="Connexion…"></span>
+          <span class="api-label">API</span>
         </div>
-        <button id="theme-toggle" aria-label="Basculer le thème">🌙</button>
-    </header>
 
-    <div class="layout">
+        <button id="theme-toggle" class="theme-btn" aria-label="Basculer le thème">☀️</button>
 
-        <!-- ─── SIDEBAR GAUCHE : Catégories ─────────────────────────── -->
-        <aside id="sidebar">
-            <h2>Catégories</h2>
-            <!-- Rempli par renderCategories() dans ui.js -->
-            <nav id="categories-list"></nav>
-        </aside>
-
-        <!-- ─── CONTENU PRINCIPAL ────────────────────────────────────── -->
-        <main>
-
-            <!-- Filtres rapides par tag -->
-            <div id="tag-filters">
-                <button data-tag="" class="active">Tous</button>
-                <button data-tag="new">Nouveautés</button>
-                <button data-tag="sale">En promo</button>
-            </div>
-
-            <!-- Grille produits -->
-            <section id="products-section">
-                <h2>Nos Produits</h2>
-                <div id="products-grid">
-                    
-                </div>
-            </section>
-
-            <!-- Promotions -->
-            <section id="promotions-section">
-                <h2>Promotions en cours</h2>
-                <div id="promotions-list"></div>
-            </section>
-
-            <!-- Avis clients -->
-            <section id="testimonials-section">
-                <h2>Avis clients</h2>
-                <div id="testimonials-list"></div>
-            </section>
-
-        </main>
+        <button class="cart-btn" title="Panier">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span id="cart-count"></span>
+        </button>
+      </div>
 
     </div>
+  </header>
 
-    <script src="js/api.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
+  <div class="page-layout">
+
+    <aside class="sidebar">
+      <p class="sidebar-title">Catégories</p>
+      <ul id="sidebar-categories">
+        <li><button class="cat-btn active" data-cat="all" onclick="filtrerParCategorie('all', this)">
+            <span class="cat-icon">🏪</span> Tous les produits
+          </button></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+
+      <section id="promotions-section"></section>
+
+      <div class="filter-bar">
+        <div class="filter-bar-left" id="filter-categories"></div>
+        <div class="filter-bar-right">
+          <span id="products-count"></span>
+          <select id="tri" class="select-tri">
+            <option value="default">Trier par…</option>
+            <option value="prix-asc">Prix croissant</option>
+            <option value="prix-desc">Prix décroissant</option>
+            <option value="note">Meilleures notes</option>
+            <option value="nom">Nom A→Z</option>
+          </select>
+        </div>
+      </div>
+
+      <section id="products-grid"></section>
+
+      <section id="testimonials-section"></section>
+
+    </main>
+  </div>
+
+  <div id="modal" role="dialog" aria-modal="true">
+    <div id="modal-content"></div>
+  </div>
+
+  <footer>
+    <p>© 2025 <strong>TechZone</strong> — Boutique Tech en ligne</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
+
 </html>

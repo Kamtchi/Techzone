@@ -1,108 +1,137 @@
-// Ce fichier s'occupe uniquement d'afficher les données dans le HTML.
-// Il ne fait aucun appel API — il reçoit des données et les met dans le DOM.
+function afficherCategories(categories) {
+  const sidebarList = document.querySelector('#sidebar-categories');
+  const filterBar = document.querySelector('#filter-categories');
 
-function renderProducts(products) {
-    const grid = document.getElementById('products-grid');
-
-    if (products.length === 0) {
-        grid.innerHTML = '<p class="empty">Aucun produit trouvé.</p>';
-        return;
-    }
-
-    grid.innerHTML = products.map(product => `
-        <div class="product-card">
-            <img src="${product.image}" alt="${product.name}" loading="lazy">
-            ${product.tag === 'new' ? '<span class="badge badge-new">Nouveau</span>' : ''}
-            ${product.tag === 'sale' ? '<span class="badge badge-sale">Promo</span>' : ''}
-            <h3>${product.name}</h3>
-            <p class="brand">${product.brand || ''}</p>
-            <div class="rating">${renderStars(product.rating)}</div>
-            <div class="price">
-                ${product.old_price > 0
-                    ? `<span class="old-price">${product.old_price.toLocaleString('fr-FR')} FCFA</span>`
-                    : ''
-                }
-                <span class="current-price">${product.price.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-function renderStars(rating) {
-    if (!rating) return '';
-    const full = Math.floor(rating);
-    return `<span>${'★'.repeat(full)}${'☆'.repeat(5 - full)} ${rating}/5</span>`;
-}
-
-// Les catégories sont affichées dans la sidebar à gauche.
-// L'API retourne un champ "icon" (emoji) pour chaque catégorie — on l'utilise directement.
-function renderCategories(categories) {
-    const list = document.getElementById('categories-list');
-    list.innerHTML = `
-        <button class="category-btn active" data-category="">
-            <span class="cat-icon">🏠</span>
-            <span>Tous</span>
+  if (sidebarList) {
+    sidebarList.innerHTML = `
+      <li>
+        <button class="cat-btn active" data-cat="all" onclick="filtrerParCategorie('all', this)">
+          <span class="cat-icon">🏪</span> Tous les produits
         </button>
-        ${categories.map(cat => `
-            <button class="category-btn" data-category="${cat.id}">
-                <span class="cat-icon">${cat.icon}</span>
-                <span>${cat.name}</span>
-            </button>
-        `).join('')}
+      </li>
+      ${categories.map(cat => `
+        <li>
+          <button class="cat-btn" data-cat="${cat.id}" onclick="filtrerParCategorie('${cat.id}', this)">
+            <span class="cat-icon">${cat.icon || '📦'}</span> ${cat.name}
+          </button>
+        </li>
+      `).join('')}
     `;
+  }
+
+  if (filterBar) {
+    filterBar.innerHTML = `
+      <button class="chip active" data-cat="all" onclick="filtrerParCategorie('all', this)">Tous</button>
+      ${categories.map(cat => `
+        <button class="chip" data-cat="${cat.id}" onclick="filtrerParCategorie('${cat.id}', this)">
+          ${cat.icon || ''} ${cat.name}
+        </button>
+      `).join('')}
+    `;
+  }
 }
 
-function renderPromotions(promotions) {
-    const list = document.getElementById('promotions-list');
-    list.innerHTML = promotions.map(promo => `
-        <div class="promo-card">
-            ${promo.discount ? `<span class="discount">-${promo.discount}%</span>` : ''}
-            <h3>${promo.title}</h3>
-            <p>${promo.description || ''}</p>
+function afficherPromotions(promotions) {
+  const container = document.querySelector('#promotions-section');
+  if (!container || !promotions.length) return;
+
+  container.innerHTML = `
+    <div class="section-header">
+      <h2 class="section-title">🔥 Offres Spéciales</h2>
+      <span class="section-subtitle">Durée limitée — profitez-en !</span>
+    </div>
+    <div class="promo-grid">
+      ${promotions.map((promo, i) => `
+        <div class="promo-card promo-${i + 1}">
+          <div class="promo-content">
+            <span class="promo-label">${promo.label || 'PROMOTION'}</span>
+            <h3 class="promo-title">${promo.title || ''}</h3>
+            <p class="promo-desc">${promo.description || ''}</p>
+            <div class="promo-discount">${promo.discount || ''}</div>
+            <button class="promo-cta" onclick="filtrerParCategorie('${promo.category_id || 'all'}', null)">
+              Voir les offres →
+            </button>
+          </div>
         </div>
-    `).join('');
+      `).join('')}
+    </div>
+  `;
 }
 
-function renderTestimonials(testimonials) {
-    const list = document.getElementById('testimonials-list');
-    list.innerHTML = testimonials.map(t => `
+function afficherTemoignages(temoignages) {
+  const container = document.querySelector('#testimonials-section');
+  if (!container || !temoignages.length) return;
+
+  container.innerHTML = `
+    <div class="section-header">
+      <h2 class="section-title">💬 Avis Clients</h2>
+      <span class="section-subtitle">Ce que nos clients disent de nous</span>
+    </div>
+    <div class="testimonials-grid">
+      ${temoignages.map(t => `
         <div class="testimonial-card">
-            <p class="testimonial-text">"${t.comment || t.text || t.body || ''}"</p>
-            <p class="testimonial-author">— ${t.name || t.author || 'Anonyme'}</p>
-            ${t.rating ? `<div class="rating">${renderStars(t.rating)}</div>` : ''}
+          <div class="testimonial-stars">
+            ${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}
+          </div>
+          <p class="testimonial-text">"${t.comment || t.text || ''}"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">${(t.name || 'A')[0].toUpperCase()}</div>
+            <div>
+              <strong>${t.name || 'Anonyme'}</strong>
+              <span>${t.date || ''}</span>
+            </div>
+          </div>
         </div>
-    `).join('');
+      `).join('')}
+    </div>
+  `;
 }
 
+function afficherErreur(message) {
+  const container = document.querySelector('#products-grid');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="error-state">
+      <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <h3>Oops ! Une erreur est survenue</h3>
+      <p>${message}</p>
+      <button onclick="location.reload()">🔄 Réessayer</button>
+    </div>
+  `;
+}
+
+function setApiStatus(etat) {
+  const dot = document.querySelector('#api-status');
+  if (!dot) return;
+  dot.className = 'api-dot ' + etat;
+  const labels = { loading: 'Connexion…', ok: 'API connectée', error: 'API hors ligne' };
+  dot.title = labels[etat] || '';
+}
+
+/* ── Dark / Light theme ── */
 function initTheme() {
-    const saved = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
-    updateThemeIcon(saved);
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon(saved);
 }
 
 function updateThemeIcon(theme) {
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function setupThemeToggle() {
-    const btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        updateThemeIcon(next);
-    });
-}
-
-function renderLoading() {
-    document.getElementById('products-grid').innerHTML =
-        '<p class="loading">Chargement des produits...</p>';
-}
-
-function renderError(message) {
-    document.getElementById('products-grid').innerHTML =
-        `<p class="error">${message}</p>`;
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon(next);
+  });
 }
