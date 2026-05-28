@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechZone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>TechZone</h1>
+        <p>La tech à portée de main</p>
+    </header>
+
+    <div class="layout">
+
+        <!-- ─── SIDEBAR GAUCHE : Catégories ─────────────────────────── -->
+        <aside id="sidebar">
+            <h2>Catégories</h2>
+            <!-- Rempli par renderCategories() dans ui.js -->
+            <nav id="categories-list"></nav>
+        </aside>
+
+        <!-- ─── CONTENU PRINCIPAL ────────────────────────────────────── -->
+        <main>
+
+            <!-- Filtres rapides par tag -->
+            <div id="tag-filters">
+                <button data-tag="" class="active">Tous</button>
+                <button data-tag="new">Nouveautés</button>
+                <button data-tag="sale">En promo</button>
+            </div>
+
+            <!-- Grille produits -->
+            <section id="products-section">
+                <h2>Nos Produits</h2>
+                <div id="products-grid">
+                    
+                </div>
+            </section>
+
+            <!-- Promotions -->
+            <section id="promotions-section">
+                <h2>Promotions en cours</h2>
+                <div id="promotions-list"></div>
+            </section>
+
+            <!-- Avis clients -->
+            <section id="testimonials-section">
+                <h2>Avis clients</h2>
+                <div id="testimonials-list"></div>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
